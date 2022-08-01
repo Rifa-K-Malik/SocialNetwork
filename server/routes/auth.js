@@ -23,9 +23,9 @@ router.post('/signup', (req, res) => {
             bcryptjs.hash(password, 12)
                 .then(hashedpassword => {
                     const user = new User({
-                        email:email,
-                        password:hashedpassword,
-                        name:name
+                        email: email,
+                        password: hashedpassword,
+                        name: name
                     })
                     user.save()
                         .then(user => {
@@ -42,6 +42,32 @@ router.post('/signup', (req, res) => {
         })
 });
 
+//SignIn
+router.post("/signin", (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(422).json({ error: "SignIn:- Please add all details" }); //recieving from client - blank details
+    }
+    User.findOne({ email: email }).then((savedUser) => {
+      if (!savedUser) {
+        //recieving from client - wrong Email ID
+        return res.status(422).json({ error: "Invalid Email or Password" });
+      }
+      bcryptjs.compare(password,savedUser.password)
+      .then(doMatch=>{
+        if(doMatch){
+          res.json({message:"From Server: Successully Signed In"})
+        }
+        else{
+          return res.status(422).json({ error: "Invalid Email or Password" });
+        }
+      })
+      .catch(err=>{
+        console.log(err);
+      })
+    });
+  });
+  
 export default router;
 
 
