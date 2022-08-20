@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import '../../server/models/user.js';
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { SecrateValues } from "../keys.js";
 
 const router = express.Router();
 const User = mongoose.model("User");
@@ -60,7 +61,7 @@ router.post("/signin", (req, res) => {
       .then(doMatch=>{
         if(doMatch){
           // res.json({message:"From Server: Successully Signed In"})
-          const token = jwt.sign({_id:savedUser._id},'secret');
+          const token = jwt.sign({_id:savedUser._id},SecrateValues);
           const {_id,name,email} = savedUser;
           res.json({token,user:{_id,name,email}});
           console.log(token); 
