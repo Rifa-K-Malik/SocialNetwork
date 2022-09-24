@@ -1,1 +1,1 @@
-export var SecrateValues = "erruygkjbkj";
+export var SecretValues = "qwerty";
