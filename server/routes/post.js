@@ -14,7 +14,7 @@ routerPost.post('/createpost',requireLogin,(req,res)=>{
     return res.status(422).json({error:"Please add all fields"});
    }
    req.user.password = undefined;
-   const post = new post({
+   const post = new Post({
     title,
     body,
     photo:pic,
@@ -22,18 +22,15 @@ routerPost.post('/createpost',requireLogin,(req,res)=>{
    })
    post.save().then(result=>{
     res.json({post:result})
-    .then((user) => {
-      return res.json({ message: "Server: Post Created Successfully" });
-    })
-    console.log(result)
    })
    .catch(err=>{
     console.log(err)
    })
 })
 
-routerPost.get('/allpost',requireLogin,(req,res)=>{
+routerPost.get("/allpost",requireLogin,(req,res)=>{
    Post.find()
+   .populate([{ path: "postedBy", strictPopulate: false }])
    .populate("postedBy","_id name")
    .then(posts=>{
       res.json({posts})
@@ -43,14 +40,42 @@ routerPost.get('/allpost',requireLogin,(req,res)=>{
      })
 })
 
-routerPost.get("/mypost",requireLogin,(req,res)=>{
+routerPost.get('/mypost',requireLogin,(req,res)=>{
    Post.find({postedBy:req.user._id})
+   .populate([{ path: "postedBy", strictPopulate: false }])
+   .populate("postedBy","_id name")
    .then(mypost=>{
       res.json({mypost})
    })
    .catch(err=>{
       console.log(err)
      })
+})
+
+routerPost.put('/like',requireLogin,(req,res)=>{
+   Post.findByIdAndUpdate(req.body.postId,{
+      $push:{likes:req.user._id}
+   },{
+      new:true
+   }).exec((err,result)=>{
+         if(err)
+            return res.status(422).json({error:err})
+         else
+            res.json(result)
+   })
+})
+
+routerPost.put('/unlike',requireLogin,(req,res)=>{
+   Post.findByIdAndUpdate(req.body.postId,{
+      $pull:{likes:req.user._id}
+   },{
+      new:true
+   }).exec((err,result)=>{
+         if(err)
+            return res.status(422).json({error:err})
+         else
+            res.json(result)
+   })
 })
 
 export default routerPost;
